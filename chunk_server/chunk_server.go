@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"code.google.com/p/goprotobuf/proto"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"os"
 )
@@ -63,7 +64,7 @@ func main() {
 }
 
 func handleConnection(conn net.Conn) {
-	buf, err := bufio.NewReader(conn).ReadBytes('\n')
+	buf, err := ioutil.ReadAll(conn)
 	if err != nil {
 		panic(err)
 	}
