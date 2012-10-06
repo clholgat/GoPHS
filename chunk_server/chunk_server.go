@@ -12,6 +12,7 @@ import (
 var (
 	SERVER_ID = 0
 	MASTER    = ""
+	listener net.Listener
 )
 
 // This function runs before main
@@ -34,22 +35,24 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+
+	listener, err = net.Listen("tcp", conn.LocalAddr().String())
+	if err != nil {
+		panic(err)
+	}
+
 	fmt.Println("sending ping to master")
 	fmt.Fprintf(conn, "ping")
 	status, err := bufio.NewReader(conn).ReadString('\n')
 	fmt.Println(status)
+	conn.Close()
 }
 
 func main() {
 	fmt.Println("All the things")
 
-	l, err := net.Listen("tcp", ":12346")
-	if err != nil {
-		panic(err)
-	}
-
 	for {
-		conn, err := l.Accept()
+		conn, err := listener.Accept()
 		if err != nil {
 			panic(err)
 		}
