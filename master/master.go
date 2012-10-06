@@ -1,7 +1,7 @@
 package main
 
 import (
-	"./ohhai"
+	"github.com/clholgat/GoPHS/ohhai"
 	"bufio"
 	"code.google.com/p/goprotobuf/proto"
 	"fmt"
@@ -37,6 +37,8 @@ func listen() {
 			CHUNK_SERVERS = append(CHUNK_SERVERS, incoming)
 			sendHeartBeatRequest(incoming)
 			io.WriteString(c, "1")
+			bytes, err := ioutil.ReadAll(c)
+			fmt.Println(bytes)
 			c.Close()
 		}(conn)
 	}

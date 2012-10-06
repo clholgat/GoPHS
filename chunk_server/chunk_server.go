@@ -1,7 +1,7 @@
 package main
 
 import (
-	"./ohhai"
+	"github.com/clholgat/GoPHS/ohhai"
 	"bufio"
 	"code.google.com/p/goprotobuf/proto"
 	"fmt"
