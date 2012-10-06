@@ -32,13 +32,11 @@ func listen() {
 
 		go func(c net.Conn) {
 			fmt.Println("Running func")
-			incoming := c.LocalAddr().String()
+			incoming := c.RemoteAddr().String()
 			fmt.Println("connecting. . .", incoming)
 			CHUNK_SERVERS = append(CHUNK_SERVERS, incoming)
 			sendHeartBeatRequest(incoming)
 			io.WriteString(c, "1")
-			bytes, err := ioutil.ReadAll(c)
-			fmt.Println(bytes)
 			c.Close()
 		}(conn)
 	}
