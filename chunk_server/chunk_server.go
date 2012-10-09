@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/clholgat/GoPHS/ohhai"
+	"../ohhai"
 	"bufio"
 	"code.google.com/p/goprotobuf/proto"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net"
 	"os"
@@ -13,7 +14,7 @@ import (
 var (
 	SERVER_ID = 0
 	MASTER    = ""
-	listener net.Listener
+	listener  net.Listener
 )
 
 // This function runs before main
@@ -37,22 +38,27 @@ func init() {
 		panic(err)
 	}
 
-	listener, err = net.Listen("tcp", conn.LocalAddr().String())
+	// Listen for communication from master on an arbitrary
+	// open port.
+	listener, err = net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Println("sending ping to master")
-	fmt.Fprintf(conn, "ping")
-	status, err := bufio.NewReader(conn).ReadString('\n')
+	// Send the listening address to master
+	io.WriteString(conn, listener.Addr().String()+"\n")
+	buf, err := ioutil.ReadAll(conn)
+	status := string(buf)
 	fmt.Println(status)
 	conn.Close()
 }
 
 func main() {
-	fmt.Println("All the things")
+	fmt.Println("Running main chunk server")
 
 	for {
+		// Wait for messages
 		conn, err := listener.Accept()
 		if err != nil {
 			panic(err)
@@ -63,6 +69,7 @@ func main() {
 
 }
 
+// Handle all of the connections.
 func handleConnection(conn net.Conn) {
 	buf, err := ioutil.ReadAll(conn)
 	if err != nil {
@@ -81,8 +88,4 @@ func handleConnection(conn net.Conn) {
 	default:
 		fmt.Println("WAT?")
 	}
-}
-
-func getChunkId() int64 {
-	return int64(1)
 }

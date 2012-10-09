@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/clholgat/GoPHS/ohhai"
+	"../ohhai"
 	"bufio"
 	"code.google.com/p/goprotobuf/proto"
 	"fmt"
@@ -31,11 +31,15 @@ func listen() {
 		}
 
 		go func(c net.Conn) {
-			fmt.Println("Running func")
-			incoming := c.RemoteAddr().String()
-			fmt.Println("connecting. . .", incoming)
-			CHUNK_SERVERS = append(CHUNK_SERVERS, incoming)
-			sendHeartBeatRequest(incoming)
+			fmt.Println("received connection")
+			server, err := bufio.NewReader(c).ReadString('\n')
+			if err != nil {
+				panic(err)
+			}
+			server = server[0 : len(server)-1]
+			fmt.Println("connecting. . .", server)
+			CHUNK_SERVERS = append(CHUNK_SERVERS, server)
+			sendHeartBeatRequest(server)
 			io.WriteString(c, "1")
 			c.Close()
 		}(conn)
@@ -52,6 +56,7 @@ func sendHeartBeatRequest(server string) {
 		MessageType:      ohhai.OhHai_HEARTBEAT_REQUEST.Enum(),
 		HeartBeatRequest: &ohhai.OhHai_HeartBeatRequest{},
 	}
+	fmt.Println(server)
 	conn, err := net.Dial("tcp", server)
 	if err != nil {
 		panic(err)
