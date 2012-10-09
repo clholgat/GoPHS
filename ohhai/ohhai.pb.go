@@ -137,6 +137,8 @@ func (this *OhHai_ReadRequest) GetRangeBottom() int64 {
 
 type OhHai_WriteRequest struct {
 	Id               *int64 `protobuf:"varint,1,req,name=id" json:"id,omitempty"`
+	RangeTop         *int64 `protobuf:"varint,2,req,name=range_top" json:"range_top,omitempty"`
+	RangeBottom      *int64 `protobuf:"varint,3,req,name=range_bottom" json:"range_bottom,omitempty"`
 	XXX_unrecognized []byte `json:"-"`
 }
 
@@ -147,6 +149,20 @@ func (*OhHai_WriteRequest) ProtoMessage()       {}
 func (this *OhHai_WriteRequest) GetId() int64 {
 	if this != nil && this.Id != nil {
 		return *this.Id
+	}
+	return 0
+}
+
+func (this *OhHai_WriteRequest) GetRangeTop() int64 {
+	if this != nil && this.RangeTop != nil {
+		return *this.RangeTop
+	}
+	return 0
+}
+
+func (this *OhHai_WriteRequest) GetRangeBottom() int64 {
+	if this != nil && this.RangeBottom != nil {
+		return *this.RangeBottom
 	}
 	return 0
 }

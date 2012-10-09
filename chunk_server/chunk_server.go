@@ -4,16 +4,23 @@ import (
 	"../ohhai"
 	"bufio"
 	"code.google.com/p/goprotobuf/proto"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net"
 	"os"
+	"strconv"
 )
+
+type Configuration struct {
+	Master     string
+	StorageDir string
+}
 
 var (
 	SERVER_ID = 0
-	MASTER    = ""
+	config    *Configuration
 	listener  net.Listener
 )
 
@@ -21,19 +28,36 @@ var (
 // Handles setup with the master server to grab an ID
 func init() {
 	// Read master server from config file
-	file, err := os.Open("master.cfg")
+	file, err := os.Open("server.cfg")
 	if err != nil {
 		panic(err)
 	}
-	reader := bufio.NewReader(file)
-	MASTER, err := reader.ReadString('\n')
+
+	buf, err := ioutil.ReadAll(file)
 	if err != nil {
-		//panic(err)
+		panic(err)
 	}
-	fmt.Println(MASTER)
+
+	config = &Configuration{}
+	err = json.Unmarshal(buf, config)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = os.Stat(config.StorageDir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			fmt.Println("Creating file directory")
+			err = os.Mkdir(config.StorageDir, os.ModeDir)
+			os.Chmod(config.StorageDir, 0666)
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
 
 	// Call master and ask for a server ID
-	conn, err := net.Dial("tcp", MASTER)
+	conn, err := net.Dial("tcp", config.Master)
 	if err != nil {
 		panic(err)
 	}
@@ -48,7 +72,7 @@ func init() {
 	fmt.Println("sending ping to master")
 	// Send the listening address to master
 	io.WriteString(conn, listener.Addr().String()+"\n")
-	buf, err := ioutil.ReadAll(conn)
+	buf, err = ioutil.ReadAll(conn)
 	status := string(buf)
 	fmt.Println(status)
 	conn.Close()
@@ -81,11 +105,67 @@ func handleConnection(conn net.Conn) {
 	switch message_type {
 	case ohhai.OhHai_HEARTBEAT_REQUEST:
 		fmt.Println("Hearbeat")
+		heartBeatResponse(conn)
 	case ohhai.OhHai_READ_REQUEST:
 		fmt.Println("Read")
+		readResponse(message.GetReadRequest(), conn)
 	case ohhai.OhHai_WRITE_REQUEST:
 		fmt.Println("Write")
 	default:
 		fmt.Println("WAT?")
 	}
+}
+
+func heartBeatResponse(conn net.Conn) {
+	fmt.Println("sending heartbeat response")
+	heartbeat := &ohhai.OhHai_HeartBeatResponse{
+		Id: make([]int64, 2, 10),
+	}
+
+	files, err := ioutil.ReadDir(config.StorageDir)
+	if err != nil {
+		panic(err)
+	}
+	for i := 0; i < len(files); i++ {
+		file, err := strconv.Atoi(files[i].Name())
+		if err == nil {
+			heartbeat.Id = append(heartbeat.Id, int64(file))
+		}
+	}
+
+	response := &ohhai.OhHai{
+		MessageType:       ohhai.OhHai_HEARTBEAT_RESPONSE.Enum(),
+		HeartBeatResponse: heartbeat,
+	}
+
+	writer := bufio.NewWriter(conn)
+	bytes, err := proto.Marshal(response)
+	if err != nil {
+		panic(err)
+	}
+	_, err = writer.Write(bytes)
+	if err != nil {
+		panic(err)
+	}
+	conn.Close()
+}
+
+func readResponse(request *OhHai_ReadRequest, conn net.Conn) {
+	fmt.Println("sending read respnose")
+	fileName := request.GetId()
+	file, err := os.Open(fileName)
+	if err != nil {
+		panic(err)
+	}
+
+	upper := request.GetRangeTop()
+	lower := request.GetRangeBottom()
+	chunk := file[uper:lower]
+
+	writer := bufio.NewWriter(conn)
+	_, err = writer.Write(chunk)
+	if err != null {
+		panic(err)
+	}
+	conn.Close()
 }

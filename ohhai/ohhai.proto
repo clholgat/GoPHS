@@ -18,6 +18,8 @@ message OhHai {
 
 	message WriteRequest {
 		required int64 id = 1;
+		required int64 range_top = 2;
+		required int64 range_bottom = 3;
 	}
 	optional WriteRequest write_request = 2;
 
