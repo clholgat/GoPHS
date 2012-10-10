@@ -1,11 +1,12 @@
 package main
 
 import (
-	"../ohhai"
+	"../comm"
 	"bufio"
 	"code.google.com/p/goprotobuf/proto"
 	"fmt"
 	"io"
+	//"io/ioutil"
 	"net"
 )
 
@@ -32,6 +33,33 @@ func listen() {
 
 		go func(c net.Conn) {
 			fmt.Println("received connection")
+			reader := bufio.NewReader(c)
+			buf, err := reader.ReadString('\n')
+			if err != nil {
+				panic(err)
+			}
+			fmt.Println("Read bytes", len(buf))
+
+			// Strip the newline off the buffer
+			//buf = buf[0 : len(buf)-1]
+			fmt.Println(buf[len(buf)])
+			message := &comm.OhHai{}
+			err = proto.Unmarshal([]byte(buf), message)
+			if err != nil {
+				panic(err)
+			}
+			message_type := message.GetMessageType()
+			switch message_type {
+			case comm.OhHai_READ_REQUEST:
+				fmt.Println("read request")
+			case comm.OhHai_WRITE_REQUEST:
+				fmt.Println("write reqest")
+			case comm.OhHai_COME_ALIVE:
+				fmt.Println("come alive")
+			default:
+				fmt.Println("WAT?")
+			}
+
 			server, err := bufio.NewReader(c).ReadString('\n')
 			if err != nil {
 				panic(err)
@@ -52,9 +80,9 @@ func talk() {
 
 func sendHeartBeatRequest(server string) {
 	fmt.Println("sending heartbeat request")
-	request := &ohhai.OhHai{
-		MessageType:      ohhai.OhHai_HEARTBEAT_REQUEST.Enum(),
-		HeartBeatRequest: &ohhai.OhHai_HeartBeatRequest{},
+	request := &comm.OhHai{
+		MessageType:      comm.OhHai_HEARTBEAT_REQUEST.Enum(),
+		HeartBeatRequest: &comm.HeartBeatRequest{},
 	}
 	fmt.Println(server)
 	conn, err := net.Dial("tcp", server)

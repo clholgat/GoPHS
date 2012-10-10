@@ -1,12 +1,12 @@
 package main
 
 import (
-	"../ohhai"
+	"../comm"
 	"bufio"
 	"code.google.com/p/goprotobuf/proto"
 	"encoding/json"
 	"fmt"
-	"io"
+	//"io"
 	"io/ioutil"
 	"net"
 	"os"
@@ -69,10 +69,30 @@ func init() {
 		panic(err)
 	}
 
-	fmt.Println("sending ping to master")
+	// Send a come alive to master
+	address := listener.Addr().String()
+	alive := &comm.OhHai{
+		MessageType: comm.OhHai_COME_ALIVE.Enum(),
+		ComeAlive:   &comm.ComeAlive{Server: &address},
+	}
+	bytes, err := proto.Marshal(alive)
+	if err != nil {
+		panic(err)
+	}
+
+	writer := bufio.NewWriter(conn)
+	fmt.Println("connecting to master")
 	// Send the listening address to master
-	io.WriteString(conn, listener.Addr().String()+"\n")
-	buf, err = ioutil.ReadAll(conn)
+	writer.Write(bytes)
+	writer.WriteByte(0)
+	writer.Flush()
+
+	reader := bufio.NewReader(conn)
+	fmt.Println(len(buf))
+	buf, err = reader.ReadBytes('\n')
+	if err != nil {
+		panic(err)
+	}
 	status := string(buf)
 	fmt.Println(status)
 	conn.Close()
@@ -99,17 +119,17 @@ func handleConnection(conn net.Conn) {
 	if err != nil {
 		panic(err)
 	}
-	message := &ohhai.OhHai{}
+	message := &comm.OhHai{}
 	err = proto.Unmarshal(buf, message)
 	message_type := message.GetMessageType()
 	switch message_type {
-	case ohhai.OhHai_HEARTBEAT_REQUEST:
+	case comm.OhHai_HEARTBEAT_REQUEST:
 		fmt.Println("Hearbeat")
 		heartBeatResponse(conn)
-	case ohhai.OhHai_READ_REQUEST:
+	case comm.OhHai_READ_REQUEST:
 		fmt.Println("Read")
 		readResponse(message.GetReadRequest(), conn)
-	case ohhai.OhHai_WRITE_REQUEST:
+	case comm.OhHai_WRITE_REQUEST:
 		fmt.Println("Write")
 	default:
 		fmt.Println("WAT?")
@@ -118,7 +138,7 @@ func handleConnection(conn net.Conn) {
 
 func heartBeatResponse(conn net.Conn) {
 	fmt.Println("sending heartbeat response")
-	heartbeat := &ohhai.OhHai_HeartBeatResponse{
+	heartbeat := &comm.HeartBeatResponse{
 		Id: make([]int64, 2, 10),
 	}
 
@@ -133,8 +153,8 @@ func heartBeatResponse(conn net.Conn) {
 		}
 	}
 
-	response := &ohhai.OhHai{
-		MessageType:       ohhai.OhHai_HEARTBEAT_RESPONSE.Enum(),
+	response := &comm.OhHai{
+		MessageType:       comm.OhHai_HEARTBEAT_RESPONSE.Enum(),
 		HeartBeatResponse: heartbeat,
 	}
 
@@ -150,21 +170,26 @@ func heartBeatResponse(conn net.Conn) {
 	conn.Close()
 }
 
-func readResponse(request *OhHai_ReadRequest, conn net.Conn) {
+func readResponse(request *comm.ReadRequest, conn net.Conn) {
 	fmt.Println("sending read respnose")
 	fileName := request.GetId()
-	file, err := os.Open(fileName)
+	file, err := os.Open(string(fileName))
+	if err != nil {
+		panic(err)
+	}
+
+	buf, err := ioutil.ReadAll(file)
 	if err != nil {
 		panic(err)
 	}
 
 	upper := request.GetRangeTop()
 	lower := request.GetRangeBottom()
-	chunk := file[uper:lower]
+	chunk := buf[upper:lower]
 
 	writer := bufio.NewWriter(conn)
 	_, err = writer.Write(chunk)
-	if err != null {
+	if err != nil {
 		panic(err)
 	}
 	conn.Close()

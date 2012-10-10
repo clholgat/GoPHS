@@ -2,7 +2,7 @@
 // source: ohhai.proto
 // DO NOT EDIT!
 
-package ohhai
+package comm
 
 import proto "code.google.com/p/goprotobuf/proto"
 import json "encoding/json"
@@ -20,6 +20,7 @@ const (
 	OhHai_HEARTBEAT_RESPONSE OhHai_MessageType = 1
 	OhHai_READ_REQUEST       OhHai_MessageType = 2
 	OhHai_WRITE_REQUEST      OhHai_MessageType = 3
+	OhHai_COME_ALIVE         OhHai_MessageType = 4
 )
 
 var OhHai_MessageType_name = map[int32]string{
@@ -27,12 +28,14 @@ var OhHai_MessageType_name = map[int32]string{
 	1: "HEARTBEAT_RESPONSE",
 	2: "READ_REQUEST",
 	3: "WRITE_REQUEST",
+	4: "COME_ALIVE",
 }
 var OhHai_MessageType_value = map[string]int32{
 	"HEARTBEAT_REQUEST":  0,
 	"HEARTBEAT_RESPONSE": 1,
 	"READ_REQUEST":       2,
 	"WRITE_REQUEST":      3,
+	"COME_ALIVE":         4,
 }
 
 func (x OhHai_MessageType) Enum() *OhHai_MessageType {
@@ -56,12 +59,13 @@ func (x *OhHai_MessageType) UnmarshalJSON(data []byte) error {
 }
 
 type OhHai struct {
-	MessageType       *OhHai_MessageType       `protobuf:"varint,5,req,name=message_type,enum=ohhai.OhHai_MessageType" json:"message_type,omitempty"`
-	ReadRequest       *OhHai_ReadRequest       `protobuf:"bytes,1,opt,name=read_request" json:"read_request,omitempty"`
-	WriteRequest      *OhHai_WriteRequest      `protobuf:"bytes,2,opt,name=write_request" json:"write_request,omitempty"`
-	HeartBeatRequest  *OhHai_HeartBeatRequest  `protobuf:"bytes,3,opt,name=heart_beat_request" json:"heart_beat_request,omitempty"`
-	HeartBeatResponse *OhHai_HeartBeatResponse `protobuf:"bytes,4,opt,name=heart_beat_response" json:"heart_beat_response,omitempty"`
-	XXX_unrecognized  []byte                   `json:"-"`
+	MessageType       *OhHai_MessageType `protobuf:"varint,5,req,name=message_type,enum=comm.OhHai_MessageType" json:"message_type,omitempty"`
+	ReadRequest       *ReadRequest       `protobuf:"bytes,1,opt,name=read_request" json:"read_request,omitempty"`
+	WriteRequest      *WriteRequest      `protobuf:"bytes,2,opt,name=write_request" json:"write_request,omitempty"`
+	HeartBeatRequest  *HeartBeatRequest  `protobuf:"bytes,3,opt,name=heart_beat_request" json:"heart_beat_request,omitempty"`
+	HeartBeatResponse *HeartBeatResponse `protobuf:"bytes,4,opt,name=heart_beat_response" json:"heart_beat_response,omitempty"`
+	ComeAlive         *ComeAlive         `protobuf:"bytes,6,opt,name=come_alive" json:"come_alive,omitempty"`
+	XXX_unrecognized  []byte             `json:"-"`
 }
 
 func (this *OhHai) Reset()         { *this = OhHai{} }
@@ -75,115 +79,138 @@ func (this *OhHai) GetMessageType() OhHai_MessageType {
 	return 0
 }
 
-func (this *OhHai) GetReadRequest() *OhHai_ReadRequest {
+func (this *OhHai) GetReadRequest() *ReadRequest {
 	if this != nil {
 		return this.ReadRequest
 	}
 	return nil
 }
 
-func (this *OhHai) GetWriteRequest() *OhHai_WriteRequest {
+func (this *OhHai) GetWriteRequest() *WriteRequest {
 	if this != nil {
 		return this.WriteRequest
 	}
 	return nil
 }
 
-func (this *OhHai) GetHeartBeatRequest() *OhHai_HeartBeatRequest {
+func (this *OhHai) GetHeartBeatRequest() *HeartBeatRequest {
 	if this != nil {
 		return this.HeartBeatRequest
 	}
 	return nil
 }
 
-func (this *OhHai) GetHeartBeatResponse() *OhHai_HeartBeatResponse {
+func (this *OhHai) GetHeartBeatResponse() *HeartBeatResponse {
 	if this != nil {
 		return this.HeartBeatResponse
 	}
 	return nil
 }
 
-type OhHai_ReadRequest struct {
+func (this *OhHai) GetComeAlive() *ComeAlive {
+	if this != nil {
+		return this.ComeAlive
+	}
+	return nil
+}
+
+type ReadRequest struct {
 	Id               *int64 `protobuf:"varint,1,req,name=id" json:"id,omitempty"`
 	RangeTop         *int64 `protobuf:"varint,2,req,name=range_top" json:"range_top,omitempty"`
 	RangeBottom      *int64 `protobuf:"varint,3,req,name=range_bottom" json:"range_bottom,omitempty"`
 	XXX_unrecognized []byte `json:"-"`
 }
 
-func (this *OhHai_ReadRequest) Reset()         { *this = OhHai_ReadRequest{} }
-func (this *OhHai_ReadRequest) String() string { return proto.CompactTextString(this) }
-func (*OhHai_ReadRequest) ProtoMessage()       {}
+func (this *ReadRequest) Reset()         { *this = ReadRequest{} }
+func (this *ReadRequest) String() string { return proto.CompactTextString(this) }
+func (*ReadRequest) ProtoMessage()       {}
 
-func (this *OhHai_ReadRequest) GetId() int64 {
+func (this *ReadRequest) GetId() int64 {
 	if this != nil && this.Id != nil {
 		return *this.Id
 	}
 	return 0
 }
 
-func (this *OhHai_ReadRequest) GetRangeTop() int64 {
+func (this *ReadRequest) GetRangeTop() int64 {
 	if this != nil && this.RangeTop != nil {
 		return *this.RangeTop
 	}
 	return 0
 }
 
-func (this *OhHai_ReadRequest) GetRangeBottom() int64 {
+func (this *ReadRequest) GetRangeBottom() int64 {
 	if this != nil && this.RangeBottom != nil {
 		return *this.RangeBottom
 	}
 	return 0
 }
 
-type OhHai_WriteRequest struct {
+type WriteRequest struct {
 	Id               *int64 `protobuf:"varint,1,req,name=id" json:"id,omitempty"`
 	RangeTop         *int64 `protobuf:"varint,2,req,name=range_top" json:"range_top,omitempty"`
 	RangeBottom      *int64 `protobuf:"varint,3,req,name=range_bottom" json:"range_bottom,omitempty"`
 	XXX_unrecognized []byte `json:"-"`
 }
 
-func (this *OhHai_WriteRequest) Reset()         { *this = OhHai_WriteRequest{} }
-func (this *OhHai_WriteRequest) String() string { return proto.CompactTextString(this) }
-func (*OhHai_WriteRequest) ProtoMessage()       {}
+func (this *WriteRequest) Reset()         { *this = WriteRequest{} }
+func (this *WriteRequest) String() string { return proto.CompactTextString(this) }
+func (*WriteRequest) ProtoMessage()       {}
 
-func (this *OhHai_WriteRequest) GetId() int64 {
+func (this *WriteRequest) GetId() int64 {
 	if this != nil && this.Id != nil {
 		return *this.Id
 	}
 	return 0
 }
 
-func (this *OhHai_WriteRequest) GetRangeTop() int64 {
+func (this *WriteRequest) GetRangeTop() int64 {
 	if this != nil && this.RangeTop != nil {
 		return *this.RangeTop
 	}
 	return 0
 }
 
-func (this *OhHai_WriteRequest) GetRangeBottom() int64 {
+func (this *WriteRequest) GetRangeBottom() int64 {
 	if this != nil && this.RangeBottom != nil {
 		return *this.RangeBottom
 	}
 	return 0
 }
 
-type OhHai_HeartBeatRequest struct {
+type HeartBeatRequest struct {
 	XXX_unrecognized []byte `json:"-"`
 }
 
-func (this *OhHai_HeartBeatRequest) Reset()         { *this = OhHai_HeartBeatRequest{} }
-func (this *OhHai_HeartBeatRequest) String() string { return proto.CompactTextString(this) }
-func (*OhHai_HeartBeatRequest) ProtoMessage()       {}
+func (this *HeartBeatRequest) Reset()         { *this = HeartBeatRequest{} }
+func (this *HeartBeatRequest) String() string { return proto.CompactTextString(this) }
+func (*HeartBeatRequest) ProtoMessage()       {}
 
-type OhHai_HeartBeatResponse struct {
+type HeartBeatResponse struct {
 	Id               []int64 `protobuf:"varint,1,rep,name=id" json:"id,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 
-func (this *OhHai_HeartBeatResponse) Reset()         { *this = OhHai_HeartBeatResponse{} }
-func (this *OhHai_HeartBeatResponse) String() string { return proto.CompactTextString(this) }
-func (*OhHai_HeartBeatResponse) ProtoMessage()       {}
+func (this *HeartBeatResponse) Reset()         { *this = HeartBeatResponse{} }
+func (this *HeartBeatResponse) String() string { return proto.CompactTextString(this) }
+func (*HeartBeatResponse) ProtoMessage()       {}
+
+type ComeAlive struct {
+	Server           *string `protobuf:"bytes,1,req,name=server" json:"server,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (this *ComeAlive) Reset()         { *this = ComeAlive{} }
+func (this *ComeAlive) String() string { return proto.CompactTextString(this) }
+func (*ComeAlive) ProtoMessage()       {}
+
+func (this *ComeAlive) GetServer() string {
+	if this != nil && this.Server != nil {
+		return *this.Server
+	}
+	return ""
+}
 
 func init() {
-	proto.RegisterEnum("ohhai.OhHai_MessageType", OhHai_MessageType_name, OhHai_MessageType_value)
+	proto.RegisterEnum("comm.OhHai_MessageType", OhHai_MessageType_name, OhHai_MessageType_value)
 }

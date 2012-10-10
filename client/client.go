@@ -2,7 +2,6 @@ package client
 
 import (
 	"fmt"
-	""
 )
 
 var (
@@ -15,7 +14,6 @@ func SetServer(master string) {
 
 type GoPHSFile struct {
 	name string
-
 }
 
 func Create(name string) (file *GoPHSFile, err error) {

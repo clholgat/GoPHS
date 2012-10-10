@@ -1,0 +1,20 @@
+package comm;
+
+message File {
+	required string name = 1;
+	required int64 size = 2;
+	required int64 mod_time = 3;
+	repeated Chunk chunks = 4;
+}
+
+message Chunk {
+	required string name = 1;
+	repeated string servers = 2;
+}
+
+message Directory {
+	required string name = 1;
+
+	repeated Directory sub_dirs = 2;
+	repeated File files = 3;
+}

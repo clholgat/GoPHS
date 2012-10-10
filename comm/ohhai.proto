@@ -1,0 +1,47 @@
+package comm;
+
+message OhHai {
+	enum MessageType {
+		HEARTBEAT_REQUEST = 0;
+		HEARTBEAT_RESPONSE = 1;
+		READ_REQUEST = 2;
+		WRITE_REQUEST = 3;
+		COME_ALIVE = 4;
+	}
+	required MessageType message_type = 5;
+
+	optional ReadRequest read_request = 1;
+
+	optional WriteRequest write_request = 2;
+	
+	optional HeartBeatRequest heart_beat_request = 3;
+
+	optional HeartBeatResponse heart_beat_response = 4;
+
+	optional ComeAlive come_alive = 6;
+
+}
+
+message ReadRequest {
+	required int64 id = 1;
+	required int64 range_top = 2;
+	required int64 range_bottom = 3;
+}
+
+message WriteRequest {
+	required int64 id = 1;
+	required int64 range_top = 2;
+	required int64 range_bottom = 3;
+}
+
+message HeartBeatRequest {
+
+}
+
+message HeartBeatResponse {
+	repeated int64 id = 1;
+}
+
+message ComeAlive {
+	required string server = 1;
+}
