@@ -49,6 +49,8 @@ func (this *File) GetModTime() int64 {
 type Chunk struct {
 	Name             *string  `protobuf:"bytes,1,req,name=name" json:"name,omitempty"`
 	Servers          []string `protobuf:"bytes,2,rep,name=servers" json:"servers,omitempty"`
+	RangeTop         *int64   `protobuf:"varint,3,req,name=range_top" json:"range_top,omitempty"`
+	RangeBottom      *int64   `protobuf:"varint,4,req,name=range_bottom" json:"range_bottom,omitempty"`
 	XXX_unrecognized []byte   `json:"-"`
 }
 
@@ -61,6 +63,20 @@ func (this *Chunk) GetName() string {
 		return *this.Name
 	}
 	return ""
+}
+
+func (this *Chunk) GetRangeTop() int64 {
+	if this != nil && this.RangeTop != nil {
+		return *this.RangeTop
+	}
+	return 0
+}
+
+func (this *Chunk) GetRangeBottom() int64 {
+	if this != nil && this.RangeBottom != nil {
+		return *this.RangeBottom
+	}
+	return 0
 }
 
 type Directory struct {

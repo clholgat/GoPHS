@@ -2,8 +2,8 @@ package main
 
 import (
 	"../comm"
+	"../util"
 	"bufio"
-	"code.google.com/p/goprotobuf/proto"
 	"encoding/json"
 	"fmt"
 	//"io"
@@ -27,26 +27,30 @@ var (
 // This function runs before main
 // Handles setup with the master server to grab an ID
 func init() {
-	// Read master server from config file
+	// Grab the config file.
 	file, err := os.Open("server.cfg")
 	if err != nil {
 		panic(err)
 	}
 
+	// Read the config file.
 	buf, err := ioutil.ReadAll(file)
 	if err != nil {
 		panic(err)
 	}
 
+	// Parse the config file.
 	config = &Configuration{}
 	err = json.Unmarshal(buf, config)
 	if err != nil {
 		panic(err)
 	}
 
+	// Check if the file directory exists.
 	_, err = os.Stat(config.StorageDir)
 	if err != nil {
 		if os.IsNotExist(err) {
+			// Create directory if it doesn't exist.
 			fmt.Println("Creating file directory")
 			err = os.Mkdir(config.StorageDir, os.ModeDir)
 			os.Chmod(config.StorageDir, 0666)
@@ -56,7 +60,7 @@ func init() {
 		}
 	}
 
-	// Call master and ask for a server ID
+	// Call master for initial communication.
 	conn, err := net.Dial("tcp", config.Master)
 	if err != nil {
 		panic(err)
@@ -69,32 +73,31 @@ func init() {
 		panic(err)
 	}
 
-	// Send a come alive to master
+	// Build a come alive message.
 	address := listener.Addr().String()
 	alive := &comm.OhHai{
 		MessageType: comm.OhHai_COME_ALIVE.Enum(),
 		ComeAlive:   &comm.ComeAlive{Server: &address},
 	}
-	bytes, err := proto.Marshal(alive)
+
+	// Send the proto to master
+	util.SendProto(conn, alive)
+
+	// Get the response from the server.
+	response, err := util.GetProto(conn)
 	if err != nil {
 		panic(err)
 	}
-
-	writer := bufio.NewWriter(conn)
-	fmt.Println("connecting to master")
-	// Send the listening address to master
-	writer.Write(bytes)
-	writer.WriteByte(0)
-	writer.Flush()
-
-	reader := bufio.NewReader(conn)
-	fmt.Println(len(buf))
-	buf, err = reader.ReadBytes('\n')
-	if err != nil {
-		panic(err)
+	message_type := response.GetMessageType()
+	switch message_type {
+	case comm.OhHai_ACK:
+		fmt.Println("Successfully connected to master")
+	case comm.OhHai_ERROR:
+		fmt.Println("Could not connect")
+	default:
+		fmt.Println("THESE ARE NOT THE DROIDS YOU'RE LOOKING FOR")
 	}
-	status := string(buf)
-	fmt.Println(status)
+
 	conn.Close()
 }
 
@@ -115,12 +118,12 @@ func main() {
 
 // Handle all of the connections.
 func handleConnection(conn net.Conn) {
-	buf, err := ioutil.ReadAll(conn)
+	fmt.Println("new connection")
+
+	message, err := util.GetProto(conn)
 	if err != nil {
 		panic(err)
 	}
-	message := &comm.OhHai{}
-	err = proto.Unmarshal(buf, message)
 	message_type := message.GetMessageType()
 	switch message_type {
 	case comm.OhHai_HEARTBEAT_REQUEST:
@@ -139,7 +142,7 @@ func handleConnection(conn net.Conn) {
 func heartBeatResponse(conn net.Conn) {
 	fmt.Println("sending heartbeat response")
 	heartbeat := &comm.HeartBeatResponse{
-		Id: make([]int64, 2, 10),
+		Id: make([]int64, 0, 10),
 	}
 
 	files, err := ioutil.ReadDir(config.StorageDir)
@@ -158,15 +161,7 @@ func heartBeatResponse(conn net.Conn) {
 		HeartBeatResponse: heartbeat,
 	}
 
-	writer := bufio.NewWriter(conn)
-	bytes, err := proto.Marshal(response)
-	if err != nil {
-		panic(err)
-	}
-	_, err = writer.Write(bytes)
-	if err != nil {
-		panic(err)
-	}
+	util.SendProto(conn, response)
 	conn.Close()
 }
 

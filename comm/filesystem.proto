@@ -10,6 +10,8 @@ message File {
 message Chunk {
 	required string name = 1;
 	repeated string servers = 2;
+	required int64 range_top = 3;
+	required int64 range_bottom = 4;
 }
 
 message Directory {

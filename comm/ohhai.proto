@@ -7,6 +7,8 @@ message OhHai {
 		READ_REQUEST = 2;
 		WRITE_REQUEST = 3;
 		COME_ALIVE = 4;
+		ACK = 5;
+		ERROR = 6;
 	}
 	required MessageType message_type = 5;
 
@@ -19,6 +21,8 @@ message OhHai {
 	optional HeartBeatResponse heart_beat_response = 4;
 
 	optional ComeAlive come_alive = 6;
+
+	optional Error error = 7;
 
 }
 
@@ -44,4 +48,8 @@ message HeartBeatResponse {
 
 message ComeAlive {
 	required string server = 1;
+}
+
+message Error {
+	required string message = 1;
 }

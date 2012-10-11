@@ -21,6 +21,8 @@ const (
 	OhHai_READ_REQUEST       OhHai_MessageType = 2
 	OhHai_WRITE_REQUEST      OhHai_MessageType = 3
 	OhHai_COME_ALIVE         OhHai_MessageType = 4
+	OhHai_ACK                OhHai_MessageType = 5
+	OhHai_ERROR              OhHai_MessageType = 6
 )
 
 var OhHai_MessageType_name = map[int32]string{
@@ -29,6 +31,8 @@ var OhHai_MessageType_name = map[int32]string{
 	2: "READ_REQUEST",
 	3: "WRITE_REQUEST",
 	4: "COME_ALIVE",
+	5: "ACK",
+	6: "ERROR",
 }
 var OhHai_MessageType_value = map[string]int32{
 	"HEARTBEAT_REQUEST":  0,
@@ -36,6 +40,8 @@ var OhHai_MessageType_value = map[string]int32{
 	"READ_REQUEST":       2,
 	"WRITE_REQUEST":      3,
 	"COME_ALIVE":         4,
+	"ACK":                5,
+	"ERROR":              6,
 }
 
 func (x OhHai_MessageType) Enum() *OhHai_MessageType {
@@ -65,6 +71,7 @@ type OhHai struct {
 	HeartBeatRequest  *HeartBeatRequest  `protobuf:"bytes,3,opt,name=heart_beat_request" json:"heart_beat_request,omitempty"`
 	HeartBeatResponse *HeartBeatResponse `protobuf:"bytes,4,opt,name=heart_beat_response" json:"heart_beat_response,omitempty"`
 	ComeAlive         *ComeAlive         `protobuf:"bytes,6,opt,name=come_alive" json:"come_alive,omitempty"`
+	Error             *Error             `protobuf:"bytes,7,opt,name=error" json:"error,omitempty"`
 	XXX_unrecognized  []byte             `json:"-"`
 }
 
@@ -110,6 +117,13 @@ func (this *OhHai) GetHeartBeatResponse() *HeartBeatResponse {
 func (this *OhHai) GetComeAlive() *ComeAlive {
 	if this != nil {
 		return this.ComeAlive
+	}
+	return nil
+}
+
+func (this *OhHai) GetError() *Error {
+	if this != nil {
+		return this.Error
 	}
 	return nil
 }
@@ -207,6 +221,22 @@ func (*ComeAlive) ProtoMessage()       {}
 func (this *ComeAlive) GetServer() string {
 	if this != nil && this.Server != nil {
 		return *this.Server
+	}
+	return ""
+}
+
+type Error struct {
+	Message          *string `protobuf:"bytes,1,req,name=message" json:"message,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (this *Error) Reset()         { *this = Error{} }
+func (this *Error) String() string { return proto.CompactTextString(this) }
+func (*Error) ProtoMessage()       {}
+
+func (this *Error) GetMessage() string {
+	if this != nil && this.Message != nil {
+		return *this.Message
 	}
 	return ""
 }
